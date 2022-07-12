@@ -1,6 +1,6 @@
 {
     "name": "spork/wiretap",
-    "description": "A repo meant for listenening to the world, and alerting you about important stuff if needed",
+    "description": "A repo meant for listening to the world, and alerting you about important stuff if needed",
     "type": "library",
     "license": "MIT",
     "authors": [

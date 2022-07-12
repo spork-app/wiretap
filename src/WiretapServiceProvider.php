@@ -1,6 +1,6 @@
 <?php
 
-namespace Spork\Research;
+namespace Spork\Wiretap;
 
 use Illuminate\Support\ServiceProvider;
 
