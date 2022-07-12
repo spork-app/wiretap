@@ -1,0 +1,25 @@
+{
+    "name": "spork/wiretap",
+    "description": "A repo meant for listenening to the world, and alerting you about important stuff if needed",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Austin Kregel",
+            "email": "5355937+austinkregel@users.noreply.github.com"
+        }
+    ],
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Spork\\Wiretap\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Spork\\Wiretap\\WiretapServiceProvider"
+            ]
+        }
+    }
+}
