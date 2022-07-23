@@ -3,6 +3,7 @@
 namespace Spork\Wiretap\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
+use Illuminate\Support\Arr;
 use Spork\Wiretap\Services\ImapService;
 
 class CheckForNewMailJob implements ShouldQueue
@@ -24,12 +25,12 @@ class CheckForNewMailJob implements ShouldQueue
             $toAddresses = array_filter($email['to'], fn ($to) => $to->mailbox !== $user);
 
             foreach ($toAddresses as $address) {
-                $existingLabel = $service->findLabel($address->mailbox);
+                $existingLabel =  Arr::first($service->findLabel($address->mailbox));
                 // Create the label if it doesn't exist, and then refresh the variables.
                 if (empty($existingLabel)) {
                     $service->createLabel($address->mailbox);
                     cache()->forget('imap.label.'.strtolower($address->mailbox));
-                    $existingLabel = $service->findLabel($address->mailbox);
+                    $existingLabel = Arr::first($service->findLabel($address->mailbox));
                 }
 
                 if (empty($existingLabel)) {
