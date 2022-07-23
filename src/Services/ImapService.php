@@ -16,20 +16,25 @@ class ImapService
         $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
         $emails = imap_search($mailbox, 'UNSEEN');
         $supportedDomains = explode(',', env('IMAP_DOMAIN'));
+
+        if (empty($emails)) {
+            return [];
+        }
+
         return array_map(function ($email) use ($mailbox, $supportedDomains) {
             $headers = imap_headerinfo($mailbox, $email);
             try {
-            return [
-                'id' => $email,
-                'date' => Carbon::parse($headers->MailDate),
-                // We should only return to addresses that are in the list of supported domains.
-                'to' => array_values(array_filter($headers->to ?? [], fn ($to) => in_array($to->host, $supportedDomains))),
-                'from' => $headers->from,
-                'unseen' => $headers->Unseen === 'U',
-            ];
-        } catch (\Throwable $e) {
-            dd($e, $headers);
-        }
+                return [
+                    'id' => $email,
+                    'date' => Carbon::parse($headers->MailDate),
+                    // We should only return to addresses that are in the list of supported domains.
+                    'to' => array_values(array_filter($headers->to ?? [], fn ($to) => in_array($to->host, $supportedDomains))),
+                    'from' => $headers->from,
+                    'unseen' => $headers->Unseen === 'U',
+                ];
+            } catch (\Throwable $e) {
+                dd($e, $headers);
+            }
         }, $emails);
     }
 
@@ -64,7 +69,7 @@ class ImapService
     public function createLabel($label)
     {
         $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-        imap_createmailbox($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}".imap_utf7_encode($label));
+        imap_createmailbox($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}".strtolower(imap_utf7_encode($label)));
         imap_close($mailbox);
     }
 
@@ -85,6 +90,8 @@ class ImapService
 
     public function findLabel(string $name)
     {
+        $name = strtolower($name);
+
         return cache()->remember('imap.label.'.$name, now()->addMinutes(30), function () use ($name) {
             $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
             $labels = imap_getmailboxes($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}", imap_utf7_encode($name));
