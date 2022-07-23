@@ -28,7 +28,7 @@ class CheckForNewMailJob implements ShouldQueue
                 // Create the label if it doesn't exist, and then refresh the variables.
                 if (empty($existingLabel)) {
                     $service->createLabel($address->mailbox);
-
+                    cache()->forget('imap.label.'.strtolower($address->mailbox));
                     $existingLabel = $service->findLabel($address->mailbox);
                 }
                 // We should now be guarenteed that the label exists.
