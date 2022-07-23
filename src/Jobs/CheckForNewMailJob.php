@@ -12,7 +12,7 @@ class CheckForNewMailJob implements ShouldQueue
     {
         $service = app(ImapService::class);
 
-        $emails = $service->findAllUnread();
+        $emails = $service->findAllFromDate(now());
 
         $processedEmails = json_decode(file_get_contents(storage_path('processed_emails.json')));
         [$user, $domain] = explode('@', env('IMAP_USERNAME'));

@@ -33,7 +33,7 @@ class ImapService
                     'unseen' => $headers->Unseen === 'U',
                 ];
             } catch (\Throwable $e) {
-                dd($e, $headers);
+                info('Error parsing email headers: '.$e->getMessage());
             }
         }, $emails);
     }
@@ -61,7 +61,7 @@ class ImapService
                     'unseen' => $headers->Unseen === 'U',
                 ];
             } catch (\Throwable $e) {
-                dd($e, $headers);
+                info('Error parsing email headers: '.$e->getMessage());
             }
         }, $emails);
     }
