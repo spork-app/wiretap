@@ -41,7 +41,7 @@ class ImapService
     public function findAllFromDate(Carbon $date)
     {
         $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-        $emails = imap_search($mailbox, 'ALL');
+        $emails = imap_search($mailbox, 'SINCE "' . $date->format('d M Y') . '"');
         $supportedDomains = explode(',', env('IMAP_DOMAIN'));
 
         if (empty($emails)) {
