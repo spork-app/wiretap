@@ -36,22 +36,28 @@ class ImapService
     public function findAllFromDate(Carbon $date)
     {
         $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-        $emails = imap_search($mailbox, 'SINCE "' . $date->format('d-M-Y') . '"');
+        $emails = imap_search($mailbox, 'SINCE "' . $date->subDay()->format('d M Y') . '"');
         $supportedDomains = explode(',', env('IMAP_DOMAIN'));
+
+        if (empty($emails)) {
+            return [];
+        }
+
         return array_map(function ($email) use ($mailbox, $supportedDomains) {
             $headers = imap_headerinfo($mailbox, $email);
+
             try {
-            return [
-                'id' => $email,
-                'date' => Carbon::parse($headers->MailDate),
-                // We should only return to addresses that are in the list of supported domains.
-                'to' => array_values(array_filter($headers->to ?? [], fn ($to) => in_array($to->host, $supportedDomains))),
-                'from' => $headers->from,
-                'unseen' => $headers->Unseen === 'U',
-            ];
-        } catch (\Throwable $e) {
-            dd($e, $headers);
-        }
+                return [
+                    'id' => $email,
+                    'date' => Carbon::parse($headers->MailDate),
+                    // We should only return to addresses that are in the list of supported domains.
+                    'to' => array_values(array_filter($headers->to ?? [], fn ($to) => in_array($to->host, $supportedDomains))),
+                    'from' => $headers->from,
+                    'unseen' => $headers->Unseen === 'U',
+                ];
+            } catch (\Throwable $e) {
+                dd($e, $headers);
+            }
         }, $emails);
     }
 
