@@ -78,6 +78,10 @@ class ImapService
         $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
         $labels = imap_getmailboxes($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}", '%');
 
+        if (empty($labels)) {
+            return [];
+        }
+
         return array_values(array_filter(array_map(function($label) {
             return [
                 'id' => $label->name,
@@ -95,6 +99,10 @@ class ImapService
         return cache()->remember('imap.label.'.$name, now()->addMinutes(30), function () use ($name) {
             $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
             $labels = imap_getmailboxes($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}", imap_utf7_encode($name));
+
+            if (empty($labels)) {
+                return [];
+            }
 
             return array_values(array_filter(array_map(function($label) {
                 return [
