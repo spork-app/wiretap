@@ -5,7 +5,7 @@ namespace Spork\Wiretap\Listeners;
 use Spork\Wiretap\Events\AbstractTappedEvent;
 use MeiliSearch\Client;
 
-class UpdateKnowledgeIndexListner
+class UpdateKnowledgeIndexListener
 {
     /**
      * Handle the event.

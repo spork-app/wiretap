@@ -4,6 +4,7 @@ namespace Spork\Wiretap\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Support\Arr;
+use Spork\Wiretap\Events\Emails\MailRecievedEvent;
 use Spork\Wiretap\Services\ImapService;
 
 class CheckForNewMailJob implements ShouldQueue
@@ -12,34 +13,17 @@ class CheckForNewMailJob implements ShouldQueue
     {
         $service = app(ImapService::class);
 
-        $emails = $service->findAllFromDate(now());
+        $emails = $service->findAllFromDate(now()->startOfDay());
 
         $processedEmails = json_decode(file_get_contents(storage_path('processed_emails.json')));
-        [$user, $domain] = explode('@', env('IMAP_USERNAME'));
 
         foreach ($emails as $email) {
             if (in_array($email['id'], $processedEmails)) {
                 continue;
             }
 
-            $toAddresses = array_filter($email['to'], fn ($to) => $to->mailbox !== $user);
+            event(new MailRecievedEvent($email));
 
-            foreach ($toAddresses as $address) {
-                $existingLabel =  Arr::first($service->findLabel($address->mailbox));
-                // Create the label if it doesn't exist, and then refresh the variables.
-                if (empty($existingLabel)) {
-                    $service->createLabel($address->mailbox);
-                    cache()->forget('imap.label.'.strtolower($address->mailbox));
-                    $existingLabel = Arr::first($service->findLabel($address->mailbox));
-                }
-
-                if (empty($existingLabel)) {
-                    dd($existingLabel, $address->mailbox);
-                }
-
-                // We should now be guarenteed that the label exists.
-                $service->applyLabelToMessages($existingLabel['name'], $email['id']);
-            }
             $processedEmails[] = $email['id'];
         }
         file_put_contents(storage_path('processed_emails.json'), json_encode($processedEmails));
