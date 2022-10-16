@@ -4,7 +4,7 @@ namespace Spork\Wiretap\Tests;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Orchestra\Testbench\TestCase as TestbenchTestCase;
-use Spork\Wiretap\WiretapServiceProvider.php;
+use Spork\Wiretap\WiretapServiceProvider;
 
 class TestCase extends TestbenchTestCase
 {
@@ -20,7 +20,7 @@ class TestCase extends TestbenchTestCase
     protected function getPackageProviders($app)
     {
         return [
-            WiretapServiceProvider.php::class,
+            WiretapServiceProvider::class,
         ];
     }
 }
