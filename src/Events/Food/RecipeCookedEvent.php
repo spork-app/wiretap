@@ -6,5 +6,4 @@ use Spork\Wiretap\Events\AbstractTappedEvent;
 
 class RecipeCookedEvent extends AbstractTappedEvent
 {
-    
 }

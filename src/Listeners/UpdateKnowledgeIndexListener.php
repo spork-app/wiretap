@@ -2,8 +2,8 @@
 
 namespace Spork\Wiretap\Listeners;
 
-use Spork\Wiretap\Events\AbstractTappedEvent;
 use MeiliSearch\Client;
+use Spork\Wiretap\Events\AbstractTappedEvent;
 
 class UpdateKnowledgeIndexListener
 {
@@ -23,7 +23,7 @@ class UpdateKnowledgeIndexListener
         $index = $client->index('knowledge');
 
         $index->addDocuments([
-            $event->linkData
+            $event->linkData,
         ]);
     }
 }

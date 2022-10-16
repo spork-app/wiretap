@@ -3,7 +3,6 @@
 namespace Spork\Wiretap\Jobs;
 
 use Illuminate\Contracts\Queue\ShouldQueue;
-use Illuminate\Support\Arr;
 use Spork\Wiretap\Events\Emails\MailRecievedEvent;
 use Spork\Wiretap\Services\ImapService;
 

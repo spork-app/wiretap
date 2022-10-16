@@ -3,17 +3,12 @@
 namespace Spork\Wiretap\Services;
 
 use Carbon\Carbon;
-use Webklex\PHPIMAP\ClientManager;
-use Webklex\PHPIMAP\Client;
-use Webklex\PHPIMAP\Folder;
-use Webklex\PHPIMAP\Message;
-use Webklex\PHPIMAP\Support\FolderCollection;
 
-class ImapService 
+class ImapService
 {
     public function findAllUnread()
     {
-        $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
+        $mailbox = imap_open('{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), OP_READONLY);
         $emails = imap_search($mailbox, 'UNSEEN');
         $supportedDomains = explode(',', env('IMAP_DOMAIN'));
 
@@ -40,8 +35,8 @@ class ImapService
 
     public function findAllFromDate(Carbon $date)
     {
-        $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-        $emails = imap_search($mailbox, 'SINCE "' . $date->format('d M Y') . '"');
+        $mailbox = imap_open('{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), OP_READONLY);
+        $emails = imap_search($mailbox, 'SINCE "'.$date->format('d M Y').'"');
         $supportedDomains = explode(',', env('IMAP_DOMAIN'));
 
         if (empty($emails)) {
@@ -68,28 +63,28 @@ class ImapService
 
     public function createLabel($label)
     {
-        $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-        imap_createmailbox($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}".strtolower(imap_utf7_encode($label)));
+        $mailbox = imap_open('{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), OP_READONLY);
+        imap_createmailbox($mailbox, '{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}'.strtolower(imap_utf7_encode($label)));
         imap_close($mailbox);
     }
 
     public function findAllLabels()
     {
-        $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-        $labels = imap_getmailboxes($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}", '%');
+        $mailbox = imap_open('{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), OP_READONLY);
+        $labels = imap_getmailboxes($mailbox, '{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}', '%');
 
         if (empty($labels)) {
             return [];
         }
 
-        return array_values(array_filter(array_map(function($label) {
+        return array_values(array_filter(array_map(function ($label) {
             return [
                 'id' => $label->name,
                 'name' => explode('}', $label->name)[1],
                 'attributes' => $label->attributes,
                 'delimiter' => $label->delimiter,
             ];
-        }, $labels), fn ($label) => !in_array($label['name'], ['INBOX', '[Gmail]'])));
+        }, $labels), fn ($label) => ! in_array($label['name'], ['INBOX', '[Gmail]'])));
     }
 
     public function findLabel(string $name)
@@ -97,32 +92,32 @@ class ImapService
         $name = strtolower($name);
 
         return cache()->remember('imap.label.'.$name, now()->addMinutes(30), function () use ($name) {
-            $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"), OP_READONLY);
-            $labels = imap_getmailboxes($mailbox, "{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}", imap_utf7_encode($name));
+            $mailbox = imap_open('{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'), OP_READONLY);
+            $labels = imap_getmailboxes($mailbox, '{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}', imap_utf7_encode($name));
 
             if (empty($labels)) {
                 return [];
             }
 
-            return array_values(array_filter(array_map(function($label) {
+            return array_values(array_filter(array_map(function ($label) {
                 return [
                     'id' => $label->name,
                     'name' => explode('}', $label->name)[1],
                     'attributes' => $label->attributes,
                     'delimiter' => $label->delimiter,
                 ];
-            }, $labels), fn ($label) => !in_array($label['name'], ['INBOX', '[Gmail]'])));
+            }, $labels), fn ($label) => ! in_array($label['name'], ['INBOX', '[Gmail]'])));
         });
     }
-    
+
     public function applyLabelToMessages($label, $messages)
     {
         $messages = implode(',', is_array($messages) ? $messages : [$messages]);
 
-        $mailbox = imap_open("{" . env('IMAP_HOST') . ":".env("IMAP_PORT") ."/imap/ssl}INBOX", env("IMAP_USERNAME"), env("IMAP_PASSWORD"));
-        if (!imap_mail_copy($mailbox, $messages, imap_utf7_encode($label))) {
+        $mailbox = imap_open('{'.env('IMAP_HOST').':'.env('IMAP_PORT').'/imap/ssl}INBOX', env('IMAP_USERNAME'), env('IMAP_PASSWORD'));
+        if (! imap_mail_copy($mailbox, $messages, imap_utf7_encode($label))) {
             throw new \Exception(imap_last_error());
         }
         imap_close($mailbox);
     }
-}   
+}

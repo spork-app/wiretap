@@ -16,8 +16,7 @@ class LabelNewMessageListener implements ShouldQueue
      */
     public function __construct(
         public ImapService $service
-    )
-    {
+    ) {
         //
     }
 
@@ -29,7 +28,7 @@ class LabelNewMessageListener implements ShouldQueue
         $toAddresses = array_filter($email['to'], fn ($to) => $to->mailbox !== $user);
 
         foreach ($toAddresses as $address) {
-            $existingLabel =  Arr::first($this->service->findLabel($address->mailbox));
+            $existingLabel = Arr::first($this->service->findLabel($address->mailbox));
             // Create the label if it doesn't exist, and then refresh the variables.
             if (empty($existingLabel)) {
                 $this->service->createLabel($address->mailbox);

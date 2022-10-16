@@ -18,16 +18,17 @@ Route::middleware('auth:sanctum')->post('/wiretap/track', function (Request $req
         'recipe.cooked' => new RecipeCookedEvent($request->user(), $request->get('context')),
         default => null,
     };
-    
+
     if (empty($event)) {
         return response()->json([
-            
+
         ], 200);
     }
-    
+
     // [ 'event' => 'article.read', 'context' => ]
 
     event($event);
+
     return response()->json([
         'event' => $event,
     ], 200);

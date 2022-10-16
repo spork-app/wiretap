@@ -9,6 +9,5 @@ class MailRecievedEvent extends AbstractTappedEvent
     public function __construct(
         public array $email
     ) {
-        
     }
 }
